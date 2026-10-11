@@ -23,7 +23,7 @@
 #define STA_ACT_BUTTON_EQUIP_RIGHT 8
 
 static void StaActButton_InitGraphic(StaActButton *sys);
-static void StaActButton_LoadItemTexture(StaActButton *sys, u32 index, u16 itemId, u32 size);
+static void StaActButton_LoadItemTexture(StaActButton *sys, u8 index, u16 itemId, u32 size);
 
 StaActButton *StaActButton_InitSystem(HeapID heapId, StaActing *stage, MusicalPoke *poke) {
     StaActButton *sys = GFL_HeapAllocate(heapId, sizeof(StaActButton), FALSE, "sta_act_button.c", 87);
@@ -88,8 +88,8 @@ void StaActButton_UpdateSystem(StaActButton *sys) {
             }
             gfxRegSetBrightnessBlend(REG_DB_BLDCNT_ADDR, 0x10, -8);
             sys->used[hit] = TRUE;
-            sys->pressed = TRUE;
             sys->active = FALSE;
+            sys->pressed = TRUE;
             sys->selected = hit;
             pos.x = hit == 0 ? 32 : 224;
             pos.y = 128;
@@ -173,28 +173,41 @@ static void StaActButton_InitGraphic(StaActButton *sys) {
 }
 
 // Copies the prop's texture, of the BlAct size `size`, into the characters of the prop's cell
-static void StaActButton_LoadItemTexture(StaActButton *sys, u32 index, u16 itemId, u32 size) {
+static void StaActButton_LoadItemTexture(StaActButton *sys, u8 index, u16 itemId, u32 size) {
+    void *file;
+    u32 texSize;
+    u32 plttSize;
+    u32 charAddr;
     u8 row;
-    u8 line;
-    u8 col;
-    u8 width;
     u8 height;
-    u8 xStart;
-    u8 yStart = 0;
-    void *file = GFL_ArcSysReadHeapNewLZ(ARCID_MUSICAL_ITEM, itemId, FALSE, sys->heapId);
-    NNSG3dResTex *tex = NNS_G3DResGetTexBlock(file);
-    u8 *texData = (u8 *)tex + tex->texInfo.ofsTex;
-    u32 plttOfs = tex->plttInfo.ofsPlttData;
-    u32 texSize = tex->texInfo.sizeTex << 3;
-    u32 plttSize = tex->plttInfo.sizePltt << 3;
-    u32 charAddr = func_0204bb80(sys->chars[0], TRUE) + (index << 11);
+    u8 line;
+    u32 yStart;
+    u32 xStart;
+    u8 *texData;
+    NNSG3dResTex *tex;
+    u32 plttOfs;
+    u8 width;
+    u8 col;
+
+    file = GFL_ArcSysReadHeapNewLZ(ARCID_MUSICAL_ITEM, itemId, FALSE, sys->heapId);
+    yStart = 0;
+    tex = NNS_G3DResGetTexBlock(file);
+    texData = (u8 *)tex + tex->texInfo.ofsTex;
+    plttOfs = tex->plttInfo.ofsPlttData;
+    texSize = tex->texInfo.sizeTex << 3;
+    plttSize = tex->plttInfo.sizePltt << 3;
+    charAddr = func_0204bb80(sys->chars[0], TRUE);
+    charAddr += index << 11;
 
     cp15_flushDC((u8 *)tex + plttOfs, plttSize);
     gfxUploadStdPaletteObjB((u8 *)tex + plttOfs, index << 5, plttSize);
     cp15_flushDC(texData, texSize);
     switch (size) {
     case 0x22:
-        // 32 by 32
+        xStart = 2;
+        yStart = 2;
+        width = 4;
+        height = 4;
         break;
     case 0x23:
         // 32 by 64
