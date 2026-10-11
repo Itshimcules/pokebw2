@@ -63,6 +63,8 @@ Same instructions, registers swapped.
 
 - Register allocation follows the declaration order of locals, so try reordering declarations when registers are
   swapped.
+- `StaActPoke_SetShowFlg` needs a `const BOOL show` parameter to keep its value in a saved register through the
+  item loop while passing its address to the final call; without `const`, MWCC reloads it from the stack at each use.
 - An array index kept scaled (`i * 4` in a callee-saved register) across a call, where ours recomputes it, can come from
   an accessor whose index parameter has another type than the caller's counter. `btl_pokeparam.c`'s
   `CopyBatonPassParams` and `func_ov167_021bb864` match only with their condition accesses through a static inline

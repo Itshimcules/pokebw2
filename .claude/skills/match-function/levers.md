@@ -7,6 +7,9 @@ text to `grep -n` there. Entries without a key come from later work and still be
 
 ## Registers swapped
 
+- An address-taken flag parameter reloaded in a loop can need top-level `const` to retain its register copy.
+  (matching.md: "const BOOL show")
+
 - Locals get registers in declaration order: reorder the declarations. (matching.md: "declaration order of locals")
   Declaring every local first and assigning them below moves both registers and slots (matching.md: "declared first")
 - A `u16` local and `local ± 1` sharing a register can push a parameter out of r0: a wider local keeps them apart.
